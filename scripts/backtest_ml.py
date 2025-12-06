@@ -6,8 +6,21 @@ import numpy as np
 import joblib
 
 # Load data
+import glob
+from pathlib import Path
+
 df = pd.read_parquet('data/historical_5min_features/BTCUSDT_2024_1m.parquet')
-model = joblib.load('models/full/rf_2021_2023_20251206_025923.pkl')
+
+# Find latest model
+model_files = glob.glob('models/full/rf_*.pkl') + glob.glob('models/simple/rf_*.pkl')
+if not model_files:
+    print('❌ No trained Random Forest model found!')
+    print('Please train a model first: python scripts/train_incremental.py')
+    exit(1)
+
+latest_model = max(model_files, key=lambda x: Path(x).stat().st_mtime)
+print(f'Loading model: {latest_model}')
+model = joblib.load(latest_model)
 
 print('='*70)
 print('🎯 ML MODEL BACKTEST (2024 BTCUSDT 5min) - OUT-OF-SAMPLE TEST')
