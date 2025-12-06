@@ -1,0 +1,29 @@
+Training Metrics
+================
+
+Train RMSE: 0.1334%
+Train MAE:  0.0763%
+Train R²:   0.0204
+
+Test RMSE:  0.1375%
+Test MAE:   0.0888%
+Test R²:    -0.0032
+
+Top Features:
+  returns_1: 0.1896
+  returns_3: 0.1887
+  MACD_hist: 0.1058
+  ATR_14: 0.0755
+  MACD: 0.0706
+  BB_width: 0.0699
+  returns_12: 0.0656
+  volume_ma_ratio: 0.0521
+  volatility_12: 0.0373
+  volatility_48: 0.0357
+  RSI_14: 0.0339
+  hour: 0.0194
+  SMA_20: 0.0143
+  SMA_10: 0.0128
+  EMA_12: 0.0118
+  day_of_week: 0.0096
+  EMA_26: 0.0075

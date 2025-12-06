@@ -1,0 +1,56 @@
+[package]
+name = "data_collector"
+version = "0.1.0"
+edition = "2021"
+authors = ["Quantum Alpha Team"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+tokio-tungstenite = "0.21"
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Database
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "chrono"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Lock-free structures
+lockfree = "0.5"
+crossbeam = "0.8"
+
+# Metrics
+prometheus = "0.13"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Configuration
+config = "0.13"
+
+# Compression
+flate2 = "1.0"
+
+[dev-dependencies]
+mockito = "1.2"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

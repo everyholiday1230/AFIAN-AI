@@ -1,0 +1,261 @@
+# QUANTUM ALPHA - System Configuration
+# 세계 최고 수준 암호화폐 선물 자동매매 시스템
+
+system:
+  name: "QUANTUM_ALPHA"
+  version: "0.1.0"
+  mode: "paper_trading"  # Options: paper_trading, live
+  log_level: "INFO"
+  
+# Data Sources
+data:
+  chart_source: "binance"  # Binance Futures for charts
+  execution_source: "bybit"  # Bybit for execution
+  
+  symbols:
+    - "BTCUSDT"
+    - "ETHUSDT"
+    - "SOLUSDT"
+  
+  timeframes:
+    - "1m"
+    - "5m"
+    - "15m"
+    - "1h"
+  
+  collection:
+    buffer_size: 10000
+    batch_size: 1000
+    flush_interval_ms: 100
+
+# AI Models
+ai:
+  # Temporal Fusion Transformer
+  tft:
+    enabled: true
+    encoder_length: 60  # 60 timesteps history
+    decoder_length: 10  # Predict 10 steps ahead
+    hidden_size: 256
+    num_heads: 4
+    num_layers: 3
+    num_quantiles: 9
+    dropout: 0.1
+    learning_rate: 0.0001
+    
+    checkpoint_path: "models/checkpoints/tft_latest.pt"
+    
+  # Decision Transformer
+  decision_transformer:
+    enabled: true
+    state_dim: 50  # Market features
+    action_dim: 4  # [position, size, stop_loss, take_profit]
+    hidden_size: 512
+    num_layers: 6
+    num_heads: 8
+    max_length: 1000
+    dropout: 0.1
+    learning_rate: 0.0003
+    
+    checkpoint_path: "models/checkpoints/dt_latest.pt"
+    
+  # Regime Detection (Contrastive VAE)
+  regime_detection:
+    enabled: true
+    input_dim: 50
+    latent_dim: 32
+    hidden_dims: [256, 128, 64]
+    n_regimes: 4
+    beta: 1.0
+    
+    regime_names:
+      0: "bull_trend"
+      1: "bear_trend"
+      2: "sideways"
+      3: "high_volatility"
+    
+    checkpoint_path: "models/checkpoints/vae_latest.pt"
+
+# Feature Engineering
+features:
+  # Fractional Differencing
+  fractional_diff:
+    enabled: true
+    d: 0.5
+    threshold: 0.00001
+  
+  # Order Flow Imbalance
+  orderflow:
+    enabled: true
+    depth: 10
+    weighted: true
+    normalize: true
+  
+  # Wavelet Denoising
+  wavelet:
+    enabled: true
+    wavelet: "db4"
+    levels: 5
+    threshold_mode: "soft"
+  
+  # Technical Indicators
+  technical:
+    rsi_period: 14
+    macd_fast: 12
+    macd_slow: 26
+    macd_signal: 9
+    bollinger_period: 20
+    bollinger_std: 2.0
+    atr_period: 14
+
+# Risk Management
+risk:
+  # Loss Limits
+  daily_loss_limit: 500.0  # USD
+  weekly_loss_limit: 1500.0
+  monthly_loss_limit: 5000.0
+  max_drawdown_pct: 20.0
+  
+  # Position Limits
+  max_leverage: 10.0
+  max_positions: 5
+  
+  max_position_size:
+    BTCUSDT: 0.1  # BTC
+    ETHUSDT: 2.0  # ETH
+    SOLUSDT: 50.0  # SOL
+  
+  max_risk_per_trade_pct: 2.0
+  
+  # Kill Switches
+  kill_switches:
+    - type: "daily_loss_limit"
+      threshold: 500.0
+      enabled: true
+    
+    - type: "consecutive_losses"
+      max_losses: 5
+      enabled: true
+    
+    - type: "volatility_spike"
+      threshold: 0.05  # 5% volatility
+      enabled: true
+    
+    - type: "api_error_rate"
+      threshold: 0.1  # 10% error rate
+      enabled: true
+    
+    - type: "model_disagreement"
+      threshold: 0.3
+      enabled: true
+    
+    - type: "drawdown_limit"
+      max_drawdown_pct: 15.0
+      enabled: true
+    
+    - type: "leverage_excess"
+      max_leverage: 10.0
+      enabled: true
+
+# Order Execution
+execution:
+  order_timeout_ms: 5000
+  max_slippage_bps: 10  # 10 basis points
+  retry_attempts: 3
+  retry_delay_ms: 100
+  
+  # Order Types
+  default_order_type: "limit"
+  use_post_only: true
+  
+  # Bybit Configuration
+  bybit:
+    testnet: true
+    api_base_url: "https://api-testnet.bybit.com"
+    recv_window: 5000
+
+# Database
+database:
+  # TimescaleDB (for time-series data)
+  timescale:
+    host: "localhost"
+    port: 5432
+    database: "quantum_alpha"
+    user: "postgres"
+    password: "your_password"
+    pool_size: 10
+  
+  # Redis (for real-time data)
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+    max_connections: 50
+
+# Monitoring
+monitoring:
+  # Prometheus metrics
+  prometheus:
+    enabled: true
+    port: 9090
+  
+  # Grafana dashboard
+  grafana:
+    enabled: true
+    port: 3000
+  
+  # Alerts
+  alerts:
+    telegram:
+      enabled: false
+      bot_token: "YOUR_BOT_TOKEN"
+      chat_id: "YOUR_CHAT_ID"
+    
+    discord:
+      enabled: false
+      webhook_url: "YOUR_WEBHOOK_URL"
+    
+    email:
+      enabled: false
+      smtp_server: "smtp.gmail.com"
+      smtp_port: 587
+      from_email: "alerts@quantumalpha.com"
+      to_emails:
+        - "admin@quantumalpha.com"
+
+# Backtesting
+backtesting:
+  start_date: "2024-01-01"
+  end_date: "2024-12-31"
+  initial_capital: 10000.0
+  commission_rate: 0.0006  # 0.06% Bybit taker fee
+  slippage_model: "proportional"
+  slippage_bps: 2.0
+
+# Performance Targets
+targets:
+  monthly_return_pct: 15.0
+  annual_sharpe_ratio: 4.0
+  max_drawdown_pct: 8.0
+  win_rate_pct: 60.0
+  
+  execution:
+    avg_latency_ms: 10.0
+    p99_latency_ms: 50.0
+  
+  availability_pct: 99.95
+
+# Logging
+logging:
+  level: "INFO"
+  format: "json"
+  
+  files:
+    main: "logs/quantum_alpha.log"
+    trading: "logs/trading.log"
+    risk: "logs/risk.log"
+    errors: "logs/errors.log"
+  
+  rotation: "1 day"
+  retention_days: 30
+  max_size_mb: 100

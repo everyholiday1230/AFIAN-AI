@@ -1,0 +1,105 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Rust
+target/
+**/*.rs.bk
+Cargo.lock
+*.pdb
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Data
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/models/*
+!data/models/.gitkeep
+
+# Large data files (exclude from git)
+data/historical/*.parquet
+data/historical_processed/*.parquet
+data/historical_5min/*.parquet
+data/historical_5min_features/*.parquet
+data/historical_features/*.parquet
+data/test/*.parquet
+data/test_processed/*.parquet
+data/test_features/*.parquet
+
+# Models (already covered above but explicit)
+models/**/*.ckpt
+models/**/*.pth
+models/**/*.pkl
+
+# Logs
+logs/*
+!logs/.gitkeep
+*.log
+
+# Config secrets
+configs/**/secrets.yaml
+configs/**/*secret*.yaml
+.env
+.env.local
+
+# Model checkpoints
+*.ckpt
+*.pth
+*.pt
+*.onnx
+*.pkl
+*.joblib
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# TimescaleDB
+postgres_data/
+
+# Redis
+dump.rdb
+
+# Monitoring
+monitoring/grafana/data/
+monitoring/prometheus/data/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

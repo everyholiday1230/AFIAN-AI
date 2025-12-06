@@ -1,0 +1,162 @@
+# Quantum Alpha System Configuration - Development
+
+system:
+  name: "Quantum Alpha"
+  version: "0.1.0"
+  environment: "development"
+  
+# Data Collection
+data:
+  exchanges:
+    binance:
+      enabled: true
+      type: "chart_data"
+      websocket_url: "wss://fstream.binance.com/ws"
+      symbols:
+        - "BTCUSDT"
+        - "ETHUSDT"
+        - "BNBUSDT"
+      
+    bybit:
+      enabled: true
+      type: "trading"
+      api_url: "https://api-testnet.bybit.com"
+      testnet: true
+      # API keys should be in environment variables
+      
+  storage:
+    redis:
+      host: "localhost"
+      port: 6379
+      db: 0
+      
+    timescale:
+      host: "localhost"
+      port: 5432
+      database: "quantum_alpha"
+      user: "quantum"
+      # password in environment variable
+      
+    s3:
+      bucket: "quantum-alpha-data"
+      region: "us-east-1"
+      # credentials in environment variables
+
+# AI Models
+models:
+  tft:
+    enabled: true
+    encoder_length: 60
+    decoder_length: 10
+    hidden_size: 256
+    num_heads: 4
+    num_quantiles: 9
+    dropout: 0.1
+    
+  decision_transformer:
+    enabled: true
+    state_dim: 50
+    action_dim: 2
+    hidden_size: 512
+    num_layers: 6
+    num_heads: 8
+    max_length: 1000
+    
+  regime_detection:
+    enabled: true
+    latent_dim: 32
+    n_regimes: 4
+    regime_names:
+      0: "bull_trend"
+      1: "bear_trend"
+      2: "sideways"
+      3: "high_volatility"
+
+# Feature Engineering
+features:
+  fractional_differencing:
+    d: 0.5
+    threshold: 1e-5
+    
+  order_flow_imbalance:
+    depth: 10
+    
+  technical_indicators:
+    - name: "rsi"
+      period: 14
+    - name: "macd"
+      fast: 12
+      slow: 26
+      signal: 9
+    - name: "bollinger_bands"
+      period: 20
+      std: 2
+    - name: "atr"
+      period: 14
+
+# Trading
+trading:
+  symbols:
+    - "BTCUSDT"
+    - "ETHUSDT"
+    
+  position_limits:
+    max_position_size: 10.0  # BTC equivalent
+    max_leverage: 10.0
+    max_risk_per_trade: 0.02  # 2%
+    
+  risk_management:
+    daily_loss_limit: 0.05  # 5%
+    kill_switches:
+      - type: "daily_loss_limit"
+        enabled: true
+      - type: "consecutive_losses"
+        max_losses: 5
+        enabled: true
+      - type: "volatility_spike"
+        threshold: 3.0
+        enabled: true
+      - type: "api_error_rate"
+        threshold: 0.1
+        enabled: true
+        
+  execution:
+    target_latency_ms: 10
+    slippage_tolerance_bps: 5  # 5 basis points
+    
+# Backtesting
+backtesting:
+  initial_capital: 10000.0
+  commission_rate: 0.00075  # 0.075%
+  slippage_model: "volume_based"
+  
+# Monitoring
+monitoring:
+  metrics:
+    collection_interval_seconds: 5
+    retention_days: 30
+    
+  alerts:
+    telegram:
+      enabled: false
+      # bot_token in environment variable
+      # chat_id in environment variable
+      
+    discord:
+      enabled: false
+      # webhook_url in environment variable
+      
+    email:
+      enabled: false
+      # smtp settings in environment variables
+
+# Logging
+logging:
+  level: "INFO"
+  format: "json"
+  outputs:
+    - "console"
+    - "file"
+  file_path: "logs/quantum_alpha.log"
+  rotation: "daily"
+  retention_days: 7

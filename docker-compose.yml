@@ -1,0 +1,187 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # TimescaleDB - Time Series Database
+  # ============================================================================
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: quantum_alpha_timescaledb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: quantum_alpha
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - quantum_alpha_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # Redis - In-Memory Cache & Message Broker
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: quantum_alpha_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - quantum_alpha_network
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ============================================================================
+  # Prometheus - Metrics Collection
+  # ============================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: quantum_alpha_prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - quantum_alpha_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  # ============================================================================
+  # Grafana - Monitoring Dashboard
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: quantum_alpha_grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - quantum_alpha_network
+    depends_on:
+      - prometheus
+
+  # ============================================================================
+  # Data Collector (Rust)
+  # ============================================================================
+  data_collector:
+    build:
+      context: ./core/data_collector
+      dockerfile: Dockerfile
+    container_name: quantum_alpha_data_collector
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379
+      BINANCE_WS_URL: wss://fstream.binance.com/ws
+    networks:
+      - quantum_alpha_network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ============================================================================
+  # Risk Manager (Rust)
+  # ============================================================================
+  risk_manager:
+    build:
+      context: ./core/risk_manager
+      dockerfile: Dockerfile
+    container_name: quantum_alpha_risk_manager
+    restart: unless-stopped
+    environment:
+      REDIS_URL: redis://redis:6379
+      DAILY_LOSS_LIMIT: 500.0
+      MAX_DRAWDOWN_PCT: 20.0
+    networks:
+      - quantum_alpha_network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ============================================================================
+  # Order Executor (Rust)
+  # ============================================================================
+  order_executor:
+    build:
+      context: ./core/order_executor
+      dockerfile: Dockerfile
+    container_name: quantum_alpha_order_executor
+    restart: unless-stopped
+    environment:
+      BYBIT_API_KEY: ${BYBIT_API_KEY}
+      BYBIT_API_SECRET: ${BYBIT_API_SECRET}
+      BYBIT_TESTNET: "true"
+      REDIS_URL: redis://redis:6379
+    networks:
+      - quantum_alpha_network
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ============================================================================
+  # Main Trading System (Python)
+  # ============================================================================
+  quantum_alpha:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quantum_alpha_main
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: 1
+      REDIS_URL: redis://redis:6379
+      TIMESCALE_HOST: timescaledb
+      TIMESCALE_PORT: 5432
+      TIMESCALE_DB: quantum_alpha
+      TIMESCALE_USER: postgres
+      TIMESCALE_PASSWORD: your_password
+      SYSTEM_MODE: paper_trading
+    volumes:
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./configs:/app/configs
+    networks:
+      - quantum_alpha_network
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      data_collector:
+        condition: service_started
+    command: python main.py
+
+volumes:
+  timescaledb_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  quantum_alpha_network:
+    driver: bridge
