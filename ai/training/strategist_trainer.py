@@ -60,14 +60,14 @@ class StrategistDataset(Dataset):
         # Get context window
         context = self.data.iloc[idx:idx+self.context_length]
         
-        states = context[self.feature_cols].values
-        rewards = context['reward'].values
+        states = context[self.feature_cols].values.copy()  # Copy to avoid negative strides
+        rewards = context['reward'].values.copy()
         
         # Return-to-go (cumulative future rewards)
-        rtg = rewards[::-1].cumsum()[::-1]
+        rtg = rewards[::-1].cumsum()[::-1].copy()  # Copy after reverse operations
         
         # Actions (simplified: 1=buy, 0=hold, -1=sell)
-        actions = np.sign(rewards)
+        actions = np.sign(rewards).copy()
         
         return {
             'states': torch.FloatTensor(states),
