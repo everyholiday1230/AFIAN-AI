@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-12-06T18:24:56.536159",
+  "total_time_seconds": 15614.281774044037,
+  "results": {
+    "5. Guardian \ud559\uc2b5": {
+      "success": true,
+      "time": 2212.7713441848755
+    },
+    "6. Oracle \ud559\uc2b5": {
+      "success": true,
+      "time": 2836.718747615814
+    },
+    "7. Strategist \ud559\uc2b5": {
+      "success": true,
+      "time": 10563.16665649414
+    },
+    "8. \ubc31\ud14c\uc2a4\ud2b8": {
+      "success": false,
+      "time": 0.0875692367553711,
+      "output": "Failed"
+    }
+  }
+}
