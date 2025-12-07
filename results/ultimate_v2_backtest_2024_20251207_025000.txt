@@ -1,0 +1,15 @@
+QUANTUM ALPHA V2 - Ultimate Backtest Results (2024)
+======================================================================
+
+Strategy: Multi-Timeframe (4H + 1H + 15min)
+Features: Minimal Set (10-12 indicators)
+Risk Management: Stop Loss + Position Sizing
+
+Total Return:     -25.95%
+Max Drawdown:     30.54%
+Sharpe Ratio:     -3.08
+Win Rate:         50.85%
+Total Trades:     4,330
+
+Initial Capital:  $10,000.00
+Final Capital:    $7,405.19
