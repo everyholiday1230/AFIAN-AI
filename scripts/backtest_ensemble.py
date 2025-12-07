@@ -16,9 +16,9 @@ from datetime import datetime
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from ai.models.tft.model import TemporalFusionTransformer
-from ai.models.decision_transformer.model import DecisionTransformer as DTModel
-from ai.models.contrastive_vae.model import ContrastiveVAE
+from ai.models.tft.temporal_fusion_transformer import TemporalFusionTransformer
+from ai.models.decision_transformer.decision_transformer import DecisionTransformer as DTModel
+from ai.models.regime_detection.contrastive_vae import ContrastiveVAE
 
 
 class EnsembleBacktester:
